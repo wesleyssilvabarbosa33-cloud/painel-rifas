@@ -1,1 +1,461 @@
-github.com/wesleyssilvabarbosa33-cloud/painel-rifas
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Painel de Rifas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;min-height:100vh;padding:1.25rem;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px;}
+.projeto-bar{background:#111;border:0.5px solid #222;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.projeto-nome{font-size:17px;font-weight:500;}
+.projeto-nome span.g{color:#25d366;}
+.projeto-nome span.y{color:#f5a623;}
+.tag{font-size:12px;padding:4px 12px;border-radius:99px;font-weight:500;}
+.tag-live{background:#1a3a2a;color:#25d366;}
+.tag-parcial{background:#2a2a1a;color:#f5a623;}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1rem;}
+@media(max-width:600px){.metrics{grid-template-columns:repeat(2,1fr);}  }
+.card{background:#111;border:0.5px solid #222;border-radius:10px;padding:1rem 1.25rem;}
+.card-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.card-value{font-size:26px;font-weight:500;letter-spacing:-.02em;}
+.card-value.green{color:#25d366;}
+.card-value.yellow{color:#f5a623;}
+.card-delta{font-size:11px;margin-top:4px;color:#555;}
+.card-delta.up{color:#25d366;}
+.chart-card{background:#111;border:0.5px solid #222;border-radius:10px;padding:1.25rem;margin-bottom:1rem;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
+.chart-title{font-size:13px;font-weight:500;color:#aaa;}
+.chart-tabs{display:flex;gap:6px;}
+.tab{font-size:11px;padding:4px 10px;border-radius:99px;border:0.5px solid #333;background:transparent;color:#666;cursor:pointer;}
+.tab.active{background:#25d36622;border-color:#25d366;color:#25d366;}
+.clients-card{background:#111;border:0.5px solid #222;border-radius:10px;padding:1.25rem;}
+.search-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
+.search-row input,.search-row select{background:#181818;border:0.5px solid #2a2a2a;border-radius:8px;padding:7px 12px;color:#ccc;font-size:13px;}
+.search-row input{flex:1;min-width:140px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;font-size:11px;color:#555;font-weight:500;padding:6px 0;border-bottom:0.5px solid #1e1e1e;text-transform:uppercase;letter-spacing:.05em;}
+td{padding:10px 0;border-bottom:0.5px solid #181818;color:#ccc;}
+tr:last-child td{border-bottom:none;}
+.avatar{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;background:#1a3a2a;color:#25d366;margin-right:8px;flex-shrink:0;}
+.name-cell{display:flex;align-items:center;}
+.badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:99px;font-weight:500;}
+.badge-green{background:#1a3a2a;color:#25d366;}
+.badge-yellow{background:#2a2a1a;color:#f5a623;}
+.badge-red{background:#2a1a1a;color:#ff5c5c;}
+.wa-btn{font-size:11px;padding:4px 10px;border-radius:99px;background:#25d36622;color:#25d366;border:0.5px solid #25d36644;cursor:pointer;font-weight:500;text-decoration:none;display:inline-block;}
+.wa-btn:hover{background:#25d36633;}
+.send-all{background:#25d366;color:#0d0d0d;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;}
+.send-all:hover{background:#1db954;}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#25d366;color:#0d0d0d;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;z-index:999;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+#loginScreen{display:flex;position:fixed;inset:0;background:#0d0d0d;z-index:999;align-items:center;justify-content:center;}
+.login-box{background:#111;border:0.5px solid #222;border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center;}
+.login-logo{font-size:32px;margin-bottom:0.5rem;}
+.login-title{font-size:18px;font-weight:500;color:#fff;margin-bottom:4px;}
+.login-sub{font-size:13px;color:#555;margin-bottom:1.75rem;}
+.login-box input{width:100%;background:#181818;border:0.5px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#ccc;font-size:14px;margin-bottom:10px;outline:none;}
+.login-box input:focus{border-color:#25d36666;}
+.login-btn{width:100%;background:#25d366;color:#0d0d0d;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;}
+.login-btn:hover{background:#1db954;}
+.login-error{font-size:12px;color:#ff5c5c;margin-top:8px;display:none;}
+.logout-btn{font-size:12px;color:#555;background:transparent;border:0.5px solid #2a2a2a;border-radius:8px;padding:5px 12px;cursor:pointer;}
+.logout-btn:hover{color:#ff5c5c;border-color:#ff5c5c33;}
+.config-btn{font-size:12px;color:#aaa;background:transparent;border:0.5px solid #2a2a2a;border-radius:8px;padding:5px 12px;cursor:pointer;}
+.config-btn:hover{color:#25d366;border-color:#25d36644;}
+.pass-strength{height:3px;border-radius:99px;margin-top:-6px;margin-bottom:10px;transition:all .3s;}
+.pass-hint{font-size:11px;margin-top:-6px;margin-bottom:10px;}
+.modal{background:#111;border:0.5px solid #333;border-radius:14px;padding:1.5rem;width:100%;max-width:420px;}
+.modal h2{font-size:15px;font-weight:500;margin-bottom:1rem;color:#fff;}
+.modal input,.modal select{width:100%;background:#181818;border:0.5px solid #2a2a2a;border-radius:8px;padding:8px 12px;color:#ccc;font-size:13px;margin-bottom:10px;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.btn-cancel{background:transparent;border:0.5px solid #333;color:#666;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:13px;}
+.btn-save{background:#25d366;color:#0d0d0d;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:13px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🎯</div>
+    <div class="login-title">Painel de Rifas</div>
+    <div class="login-sub">Entre com suas credenciais para acessar</div>
+    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="username" />
+    <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="loginError">Usuário ou senha incorretos</div>
+  </div>
+</div>
+
+<div id="dashboard" style="display:none;">
+<div class="top-bar">
+  <span style="font-size:13px;color:#555;">Painel de Rifas • Março 2026</span>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="send-all" style="background:#1a3a2a;color:#25d366;" onclick="openModal()">+ Adicionar cliente</button>
+    <button class="send-all" onclick="sendAll()">Enviar todos via WhatsApp</button>
+    <button class="config-btn" onclick="openConfig()">⚙ Alterar senha</button>
+    <button class="logout-btn" onclick="doLogout()">Sair</button>
+  </div>
+</div>
+
+<div class="projeto-bar">
+  <div class="projeto-nome" id="projetoNomeDisplay">
+    <span class="g" id="dispNome">Projeto Samuel Brasil</span>
+    <span style="color:#fff;"> — ROI </span><span style="color:#fff;" id="dispStatus">PARCIAL</span>
+    <span class="y"> <span id="dispHora">14h30</span> 💰</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span class="tag tag-live">● AO VIVO</span>
+    <span class="tag tag-parcial" id="dispStatusTag">PARCIAL</span>
+    <button class="config-btn" style="font-size:11px;padding:3px 10px;" onclick="openEditProjeto()">✏️ Editar</button>
+  </div>
+</div>
+
+<!-- Modal editar projeto -->
+<div class="modal-bg" id="editProjetoBg">
+  <div class="modal">
+    <h2>✏️ Editar projeto</h2>
+    <input type="text" id="epNome" placeholder="Nome do projeto" />
+    <select id="epStatus" style="width:100%;background:#181818;border:0.5px solid #2a2a2a;border-radius:8px;padding:8px 12px;color:#ccc;font-size:13px;margin-bottom:10px;">
+      <option value="PARCIAL">PARCIAL</option>
+      <option value="FINAL">FINAL</option>
+      <option value="EM ANDAMENTO">EM ANDAMENTO</option>
+      <option value="ENCERRADO">ENCERRADO</option>
+    </select>
+    <input type="text" id="epHora" placeholder="Horário (ex: 14h30)" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeEditProjeto()">Cancelar</button>
+      <button class="btn-save" onclick="saveEditProjeto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="card">
+    <div class="card-label">ROI</div>
+    <div class="card-value green" id="metricRoi">2,05x</div>
+    <div class="card-delta up">+0,12x hoje</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Valor investido</div>
+    <div class="card-value" id="metricInv">R$10.931</div>
+    <div class="card-delta">Capital alocado</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Total de vendas</div>
+    <div class="card-value green" id="metricVendas">R$22.450</div>
+    <div class="card-delta up">+8% vs ontem</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Bônus / Prêmios</div>
+    <div class="card-value yellow">R$0,00</div>
+    <div class="card-delta">Sem bônus hoje</div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-header">
+    <span class="chart-title">Histórico do ROI</span>
+    <div class="chart-tabs">
+      <button class="tab active" onclick="setTab(this,'roi')">ROI</button>
+      <button class="tab" onclick="setTab(this,'vendas')">Vendas</button>
+      <button class="tab" onclick="setTab(this,'investido')">Investido</button>
+    </div>
+  </div>
+  <div style="position:relative;width:100%;height:220px;">
+    <canvas id="mainChart"></canvas>
+  </div>
+</div>
+
+<div class="clients-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <span style="font-size:13px;font-weight:500;color:#aaa;">Clientes</span>
+    <span style="font-size:11px;color:#555;" id="clientCount">8 cadastrados</span>
+  </div>
+  <div class="search-row">
+    <input type="text" id="search" placeholder="Buscar cliente..." oninput="filterTable()" />
+    <select id="statusFilter" onchange="filterTable()">
+      <option value="">Todos</option>
+      <option value="Em dia">Em dia</option>
+      <option value="Pendente">Pendente</option>
+      <option value="Atrasado">Atrasado</option>
+    </select>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>WhatsApp</th>
+          <th>Cotas</th>
+          <th>Investido</th>
+          <th>ROI</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal adicionar cliente -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>Novo cliente</h2>
+    <input type="text" id="fNome" placeholder="Nome completo" />
+    <input type="text" id="fPhone" placeholder="WhatsApp (somente números)" />
+    <input type="number" id="fCotas" placeholder="Qtd de cotas" />
+    <input type="number" id="fInv" placeholder="Valor investido (R$)" />
+    <input type="number" id="fRoi" placeholder="ROI (ex: 2.05)" step="0.01" />
+    <select id="fStatus">
+      <option value="Em dia">Em dia</option>
+      <option value="Pendente">Pendente</option>
+      <option value="Atrasado">Atrasado</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /dashboard -->
+
+<!-- Modal alterar senha -->
+<div class="modal-bg" id="configBg">
+  <div class="modal">
+    <h2>🔐 Alterar credenciais</h2>
+    <input type="text" id="cUser" placeholder="Novo usuário" autocomplete="off" />
+    <input type="password" id="cPassAtual" placeholder="Senha atual" autocomplete="off" />
+    <input type="password" id="cPassNova" placeholder="Nova senha" oninput="checkStrength()" autocomplete="new-password" />
+    <div class="pass-strength" id="passBar" style="background:#2a2a2a;width:0%;"></div>
+    <div class="pass-hint" id="passHint" style="color:#555;">Digite a nova senha</div>
+    <input type="password" id="cPassConf" placeholder="Confirmar nova senha" autocomplete="new-password" />
+    <div class="login-error" id="configError" style="display:none;margin-bottom:8px;"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeConfig()">Cancelar</button>
+      <button class="btn-save" onclick="saveConfig()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const USUARIO = 'admin';
+const SENHA   = 'rifas2026';
+
+let credenciais = {
+  usuario: localStorage.getItem('rf_user') || USUARIO,
+  senha:   localStorage.getItem('rf_pass') || SENHA
+};
+
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(u===credenciais.usuario && p===credenciais.senha){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    loadProjeto();
+    buildChart('roi');
+    renderTable(clientes);
+  } else {
+    document.getElementById('loginError').style.display='block';
+    document.getElementById('loginPass').value='';
+  }
+}
+function doLogout(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').style.display='none';
+}
+function openEditProjeto(){
+  document.getElementById('epNome').value = document.getElementById('dispNome').textContent;
+  document.getElementById('epStatus').value = document.getElementById('dispStatus').textContent;
+  document.getElementById('epHora').value = document.getElementById('dispHora').textContent;
+  document.getElementById('editProjetoBg').classList.add('open');
+}
+function closeEditProjeto(){document.getElementById('editProjetoBg').classList.remove('open');}
+function saveEditProjeto(){
+  const nome = document.getElementById('epNome').value.trim();
+  const status = document.getElementById('epStatus').value;
+  const hora = document.getElementById('epHora').value.trim();
+  if(!nome||!hora){showToast('Preencha todos os campos!');return;}
+  document.getElementById('dispNome').textContent = nome;
+  document.getElementById('dispStatus').textContent = status;
+  document.getElementById('dispHora').textContent = hora;
+  document.getElementById('dispStatusTag').textContent = status;
+  localStorage.setItem('rf_proj_nome', nome);
+  localStorage.setItem('rf_proj_status', status);
+  localStorage.setItem('rf_proj_hora', hora);
+  closeEditProjeto();
+  showToast('Projeto atualizado!');
+}
+function loadProjeto(){
+  const nome = localStorage.getItem('rf_proj_nome');
+  const status = localStorage.getItem('rf_proj_status');
+  const hora = localStorage.getItem('rf_proj_hora');
+  if(nome) document.getElementById('dispNome').textContent = nome;
+  if(status){ document.getElementById('dispStatus').textContent = status; document.getElementById('dispStatusTag').textContent = status; }
+  if(hora) document.getElementById('dispHora').textContent = hora;
+}
+  document.getElementById('cUser').value=credenciais.usuario;
+  document.getElementById('cPassAtual').value='';
+  document.getElementById('cPassNova').value='';
+  document.getElementById('cPassConf').value='';
+  document.getElementById('configError').style.display='none';
+  document.getElementById('passBar').style.width='0%';
+  document.getElementById('passHint').textContent='Digite a nova senha';
+  document.getElementById('configBg').classList.add('open');
+}
+function closeConfig(){document.getElementById('configBg').classList.remove('open');}
+function checkStrength(){
+  const p=document.getElementById('cPassNova').value;
+  const bar=document.getElementById('passBar');
+  const hint=document.getElementById('passHint');
+  let score=0;
+  if(p.length>=6) score++;
+  if(p.length>=10) score++;
+  if(/[0-9]/.test(p)) score++;
+  if(/[^a-zA-Z0-9]/.test(p)) score++;
+  const colors=['#ff5c5c','#f5a623','#5b8dee','#25d366'];
+  const labels=['Muito fraca','Fraca','Boa','Forte'];
+  bar.style.width=(score*25)+'%';
+  bar.style.background=colors[score-1]||'#2a2a2a';
+  hint.textContent=p?labels[score-1]||'':'Digite a nova senha';
+  hint.style.color=colors[score-1]||'#555';
+}
+function saveConfig(){
+  const novoUser=document.getElementById('cUser').value.trim();
+  const atual=document.getElementById('cPassAtual').value;
+  const nova=document.getElementById('cPassNova').value;
+  const conf=document.getElementById('cPassConf').value;
+  const err=document.getElementById('configError');
+  if(!novoUser){err.textContent='Informe o usuário.';err.style.display='block';return;}
+  if(atual!==credenciais.senha){err.textContent='Senha atual incorreta.';err.style.display='block';return;}
+  if(nova.length<6){err.textContent='Nova senha deve ter ao menos 6 caracteres.';err.style.display='block';return;}
+  if(nova!==conf){err.textContent='As senhas não coincidem.';err.style.display='block';return;}
+  credenciais.usuario=novoUser;
+  credenciais.senha=nova;
+  localStorage.setItem('rf_user',novoUser);
+  localStorage.setItem('rf_pass',nova);
+  closeConfig();
+  showToast('Credenciais atualizadas com sucesso!');
+}
+let clientes = [
+  {name:"Marcos Oliveira",phone:"62991110001",cotas:150,investido:1500,roi:2.05,status:"Em dia"},
+  {name:"Ana Paula",phone:"62992220002",cotas:80,investido:800,roi:2.31,status:"Em dia"},
+  {name:"João Carlos",phone:"62993330003",cotas:200,investido:2000,roi:1.98,status:"Pendente"},
+  {name:"Fernanda Lima",phone:"62994440004",cotas:50,investido:500,roi:2.55,status:"Em dia"},
+  {name:"Ricardo Souza",phone:"62995550005",cotas:300,investido:3000,roi:1.75,status:"Atrasado"},
+  {name:"Camila Torres",phone:"62996660006",cotas:120,investido:1200,roi:2.42,status:"Em dia"},
+  {name:"Bruno Mendes",phone:"62997770007",cotas:90,investido:900,roi:2.08,status:"Pendente"},
+  {name:"Letícia Ramos",phone:"62998880008",cotas:60,investido:600,roi:2.28,status:"Em dia"},
+];
+
+const roiHist   = [2.024,2.555,2.321,2.676,2.42,2.084,2.576,2.116,2.277,2.476,2.054];
+const vendasHist= [18500,21000,19800,23400,20100,17900,22800,18300,21500,23900,22450];
+const invHist   = [9200,9400,9600,9800,9900,10100,10300,10500,10700,10900,10931];
+const labels    = ["Mar 1","Mar 2","Mar 3","Mar 4","Mar 5","Mar 6","Mar 7","Mar 8","Mar 9","Mar 10","Mar 11"];
+
+let chartInst = null;
+function buildChart(type){
+  const data  = type==='roi'?roiHist:type==='vendas'?vendasHist:invHist;
+  const color = type==='roi'?'#25d366':type==='vendas'?'#5b8dee':'#f5a623';
+  if(chartInst) chartInst.destroy();
+  chartInst = new Chart(document.getElementById('mainChart'),{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:color+'55',borderColor:color,borderWidth:1.5,borderRadius:4,hoverBackgroundColor:color}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>type==='roi'?c.raw.toFixed(3)+'x':'R$'+c.raw.toLocaleString('pt-BR')}}},
+      scales:{
+        y:{ticks:{color:'#555',font:{size:11},callback:v=>type==='roi'?v+'x':'R$'+Math.round(v/1000)+'k'},grid:{color:'#1a1a1a'}},
+        x:{ticks:{color:'#555',font:{size:11},maxRotation:45},grid:{display:false}}
+      }
+    }
+  });
+}
+function setTab(el,type){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  buildChart(type);
+}
+
+function initials(n){return n.split(' ').slice(0,2).map(x=>x[0]).join('');}
+function badgeClass(s){return s==='Em dia'?'badge-green':s==='Pendente'?'badge-yellow':'badge-red';}
+function fmtPhone(p){return p.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');}
+
+function renderTable(data){
+  document.getElementById('tbody').innerHTML = data.map(c=>`
+    <tr>
+      <td><div class="name-cell"><div class="avatar">${initials(c.name)}</div>${c.name}</div></td>
+      <td style="color:#555;">${fmtPhone(c.phone)}</td>
+      <td>${c.cotas}</td>
+      <td>R$${c.investido.toLocaleString('pt-BR')}</td>
+      <td style="color:#25d366;font-weight:500;">${c.roi.toFixed(2)}x</td>
+      <td><span class="badge ${badgeClass(c.status)}">${c.status}</span></td>
+      <td><button class="wa-btn" onclick="sendWA('${c.name}','${c.phone}',${c.roi},${c.investido})">WA ↗</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('clientCount').textContent = clientes.length + ' cadastrados';
+}
+
+function filterTable(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const s=document.getElementById('statusFilter').value;
+  renderTable(clientes.filter(c=>c.name.toLowerCase().includes(q)&&(s===''||c.status===s)));
+}
+
+function sendWA(name,phone,roi,inv){
+  const retorno=(inv*roi).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  const msg=encodeURIComponent(`Olá ${name}! 🎯\n\nSeu relatório de rifas — Março/2026:\n\n💰 Valor investido: R$${inv.toLocaleString('pt-BR')}\n📈 ROI: ${roi.toFixed(2)}x\n✅ Retorno estimado: R$${retorno}\n\nQualquer dúvida, é só chamar!`);
+  window.open(`https://wa.me/55${phone}?text=${msg}`,'_blank');
+  showToast('Relatório enviado para '+name);
+}
+
+function sendAll(){
+  showToast('Enviando para todos os clientes...');
+  clientes.forEach((c,i)=>{
+    setTimeout(()=>sendWA(c.name,c.phone,c.roi,c.investido),i*800);
+  });
+}
+
+function openModal(){document.getElementById('modalBg').classList.add('open');}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+function saveCliente(){
+  const name=document.getElementById('fNome').value.trim();
+  const phone=document.getElementById('fPhone').value.trim();
+  const cotas=parseInt(document.getElementById('fCotas').value)||0;
+  const investido=parseFloat(document.getElementById('fInv').value)||0;
+  const roi=parseFloat(document.getElementById('fRoi').value)||0;
+  const status=document.getElementById('fStatus').value;
+  if(!name||!phone){showToast('Preencha nome e WhatsApp!');return;}
+  clientes.push({name,phone,cotas,investido,roi,status});
+  closeModal();
+  filterTable();
+  showToast(name+' adicionado!');
+  document.getElementById('fNome').value='';
+  document.getElementById('fPhone').value='';
+  document.getElementById('fCotas').value='';
+  document.getElementById('fInv').value='';
+  document.getElementById('fRoi').value='';
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+
+</script>
+</body>
+</html>
